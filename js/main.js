@@ -1,9 +1,8 @@
 /**
- * 투표박스 - Main Page (index.html) Controller
+ * 투표박스 - Main Page Controller (Firebase async)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  Storage.seedSampleData();
   App.init();
 });
 
@@ -12,32 +11,35 @@ const App = {
   PAGE_SIZE: 6,
   posts: [],
 
-  init() {
-    this.posts = Storage.getPosts();
+  async init() {
+    this.showListLoading();
+    await Storage.seedSampleData();
+    this.posts = await Storage.getPosts();
     this.bindEvents();
     this.render();
+    this.renderSidebar();
+  },
+
+  showListLoading() {
+    const container = document.getElementById('post-list');
+    container.innerHTML = `
+      <div style="display:flex;justify-content:center;padding:3rem">
+        <div class="spinner"></div>
+      </div>`;
   },
 
   bindEvents() {
-    // 투표 작성 모달
     document.getElementById('btn-new-post').addEventListener('click', () => Modal.open());
-
-    // 모달 닫기
+    document.getElementById('btn-new-post-hero').addEventListener('click', () => Modal.open());
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('modal-overlay')) Modal.close();
     });
     document.getElementById('modal-close').addEventListener('click', () => Modal.close());
-
-    // 폼 제출
     document.getElementById('post-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      this.submitPost();
+      App.submitPost();
     });
-
-    // 선택지 추가
     document.getElementById('btn-add-option').addEventListener('click', () => Modal.addOption());
-
-    // ESC 키
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') Modal.close();
     });
@@ -48,7 +50,6 @@ const App = {
     const pagePosts = this.posts.slice(start, start + this.PAGE_SIZE);
     this.renderList(pagePosts);
     this.renderPagination();
-    // 총 개수 배지
     const badge = document.getElementById('total-badge');
     if (badge) badge.textContent = `총 ${this.posts.length}개`;
   },
@@ -68,13 +69,8 @@ const App = {
     }
 
     posts.forEach((post, i) => {
-      // 4번째마다 인피드 광고 삽입
-      if (i === 3) {
-        container.appendChild(this.createInfeedAd());
-      }
-
-      const card = this.createPostCard(post);
-      container.appendChild(card);
+      if (i === 3) container.appendChild(this.createInfeedAd());
+      container.appendChild(this.createPostCard(post));
     });
   },
 
@@ -85,7 +81,6 @@ const App = {
 
     const topOptions = post.options.slice(0, 3);
     const moreCount = post.options.length - 3;
-
     const optionBadges = topOptions.map(o =>
       `<span class="option-badge">${escapeHtml(o.text)}</span>`
     ).join('') + (moreCount > 0 ? `<span class="option-badge">+${moreCount}개 더</span>` : '');
@@ -124,18 +119,15 @@ const App = {
         <div class="ad-slot-inner">
           <span class="ad-label">Advertisement</span>
           <span class="ad-size">728 × 90 — In-Feed Ad</span>
-          <!-- Google AdSense: 여기에 광고 코드를 삽입하세요 -->
         </div>
       </div>`;
     return div.firstElementChild;
   },
 
   renderPagination() {
-    const total = this.posts.length;
-    const totalPages = Math.ceil(total / this.PAGE_SIZE);
+    const totalPages = Math.ceil(this.posts.length / this.PAGE_SIZE);
     const container = document.getElementById('pagination');
     container.innerHTML = '';
-
     if (totalPages <= 1) return;
 
     const prev = document.createElement('button');
@@ -161,14 +153,46 @@ const App = {
     container.appendChild(next);
   },
 
-  submitPost() {
+  renderSidebar() {
+    const posts = this.posts;
+    const hotList = document.getElementById('hot-posts-list');
+    const statsList = document.getElementById('site-stats');
+    const totalBadge = document.getElementById('total-badge');
+
+    if (totalBadge) totalBadge.textContent = `총 ${posts.length}개`;
+
+    const hot = [...posts].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 5);
+    if (hotList) {
+      hotList.innerHTML = hot.length === 0
+        ? '<div style="font-size:0.82rem;color:var(--text-muted)">아직 투표가 없어요</div>'
+        : hot.map(p => `
+          <a href="post.html?id=${p.id}" class="hot-post-item" style="text-decoration:none;color:inherit">
+            <div class="hot-post-title">${escapeHtml(p.title)}</div>
+            <div class="hot-post-meta">🗳️ ${p.totalVotes.toLocaleString()}표 · 💬 ${p.commentCount}</div>
+          </a>`).join('');
+    }
+
+    const totalVotes = posts.reduce((s, p) => s + (p.totalVotes || 0), 0);
+    if (statsList) {
+      statsList.innerHTML = `
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem">
+          <span style="color:var(--text-secondary)">📋 전체 투표</span>
+          <strong>${posts.length}개</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem">
+          <span style="color:var(--text-secondary)">🗳️ 누적 투표 수</span>
+          <strong>${totalVotes.toLocaleString()}표</strong>
+        </div>`;
+    }
+  },
+
+  async submitPost() {
     const title = document.getElementById('post-title').value.trim();
     const content = document.getElementById('post-content').value.trim();
     const optionInputs = document.querySelectorAll('.option-input');
-    const options = Array.from(optionInputs).map(i => i.value.trim()).filter(v => v);
+    const rawOptions = Array.from(optionInputs).map(i => i.value.trim());
 
     let valid = true;
-
     if (!title) {
       document.getElementById('title-error').classList.add('visible');
       valid = false;
@@ -176,12 +200,11 @@ const App = {
       document.getElementById('title-error').classList.remove('visible');
     }
 
-    const rawOptions = Array.from(optionInputs).map(i => i.value.trim());
     if (rawOptions.some(v => !v)) {
       document.getElementById('options-error').textContent = '빈 선택지가 있습니다. 모두 입력하거나 삭제해주세요.';
       document.getElementById('options-error').classList.add('visible');
       valid = false;
-    } else if (options.length < 2) {
+    } else if (rawOptions.length < 2) {
       document.getElementById('options-error').textContent = '선택지를 최소 2개 이상 입력해주세요.';
       document.getElementById('options-error').classList.add('visible');
       valid = false;
@@ -191,14 +214,24 @@ const App = {
 
     if (!valid) return;
 
-    Storage.createPost({ title, content, options });
-    Modal.close();
-    Toast.show('투표가 등록되었습니다! 🎉', 'success');
+    const submitBtn = document.querySelector('[type="submit"][form="post-form"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '등록 중...';
 
-    // 목록 새로고침
-    this.posts = Storage.getPosts();
-    this.currentPage = 1;
-    this.render();
+    try {
+      await Storage.createPost({ title, content, options: rawOptions });
+      Modal.close();
+      Toast.show('투표가 등록되었습니다! 🎉', 'success');
+      this.posts = await Storage.getPosts();
+      this.currentPage = 1;
+      this.render();
+      this.renderSidebar();
+    } catch {
+      Toast.show('등록 중 오류가 발생했습니다.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '🗳️ 투표 등록하기';
+    }
   },
 };
 
@@ -235,7 +268,6 @@ const Modal = {
     this._addOptionRow(this.optionCount);
     this._updateRemoveBtns();
     this._updateAddBtn();
-    // Focus new input
     const inputs = document.querySelectorAll('.option-input');
     inputs[inputs.length - 1].focus();
   },

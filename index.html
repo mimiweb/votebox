@@ -212,48 +212,9 @@
   <!-- Toast container -->
   <div class="toast-container"></div>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/main.js"></script>
-  <script>
-    // Hero button
-    document.getElementById('btn-new-post-hero').addEventListener('click', () => Modal.open());
-
-    // 인기 투표 & 사이트 통계 렌더링
-    function renderSidebar() {
-      const posts = Storage.getPosts();
-      const hotList = document.getElementById('hot-posts-list');
-      const statsList = document.getElementById('site-stats');
-      const totalBadge = document.getElementById('total-badge');
-
-      totalBadge.textContent = `총 ${posts.length}개`;
-
-      // 인기 투표 (투표 수 기준 상위 5개)
-      const hot = [...posts].sort((a, b) => b.totalVotes - a.totalVotes).slice(0, 5);
-      hotList.innerHTML = hot.length === 0
-        ? '<div style="font-size:0.82rem;color:var(--text-muted)">아직 투표가 없어요</div>'
-        : hot.map(p => `
-          <a href="post.html?id=${p.id}" class="hot-post-item" style="text-decoration:none;color:inherit">
-            <div class="hot-post-title">${escapeHtml(p.title)}</div>
-            <div class="hot-post-meta">🗳️ ${p.totalVotes.toLocaleString()}표 · 💬 ${p.commentCount}</div>
-          </a>`).join('');
-
-      // 사이트 현황
-      const totalVotes = posts.reduce((s, p) => s + (p.totalVotes || 0), 0);
-      statsList.innerHTML = `
-        <div style="display:flex;justify-content:space-between;font-size:0.85rem">
-          <span style="color:var(--text-secondary)">📋 전체 투표</span>
-          <strong>${posts.length}개</strong>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:0.85rem">
-          <span style="color:var(--text-secondary)">🗳️ 누적 투표 수</span>
-          <strong>${totalVotes.toLocaleString()}표</strong>
-        </div>`;
-    }
-
-    // DOMContentLoaded 후 사이드바 렌더링
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(renderSidebar, 50);
-    });
-  </script>
 </body>
 </html>

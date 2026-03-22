@@ -330,16 +330,9 @@
   <!-- Toast container -->
   <div class="toast-container"></div>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/admin.js"></script>
-  <script>
-    // 탭 전환 시 섹션 표시/숨김 처리
-    const origShowTab = AdminPage.showTab.bind(AdminPage);
-    AdminPage.showTab = function(tab) {
-      origShowTab(tab);
-      document.getElementById('posts-section').style.display = tab === 'posts' ? 'block' : 'none';
-      document.getElementById('comments-section').style.display = tab === 'comments' ? 'block' : 'none';
-    };
-  </script>
 </body>
 </html>
