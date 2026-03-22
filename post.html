@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>투표박스</title>
+  <meta name="description" content="익명 투표에 참여하세요 - 투표박스">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .post-page-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 899px) {
+      .post-page-layout { grid-template-columns: 1fr; }
+      .post-sidebar { display: none; }
+    }
+    .post-sidebar-sticky { position: sticky; top: 80px; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">📊</div>
+          투표박스
+        </a>
+        <span class="header-tagline">익명 투표 커뮤니티</span>
+        <div class="header-actions">
+          <a href="index.html" class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            목록으로
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="container" style="padding:1.5rem 1rem 3rem">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="index.html">홈</a>
+      <span class="breadcrumb-sep">›</span>
+      <span id="breadcrumb-title" style="color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">투표 상세</span>
+    </div>
+
+    <div class="post-page-layout">
+
+      <!-- Main Content -->
+      <div id="post-content-area">
+
+        <!-- 게시글 헤더 -->
+        <div class="post-detail-header">
+          <h1 class="post-detail-title" id="post-title">로딩 중...</h1>
+          <p class="post-detail-content" id="post-body"></p>
+          <div class="post-detail-meta" id="post-meta"></div>
+          <div class="post-detail-actions">
+            <button class="btn btn-like" id="btn-post-like">
+              <span class="like-icon">🤍</span>
+              <span id="like-count">0</span>
+              <span>좋아요</span>
+            </button>
+            <button class="share-btn" id="btn-share">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              공유하기
+            </button>
+            <a href="index.html" class="share-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              목록으로
+            </a>
+          </div>
+        </div>
+
+        <!-- 투표 영역 -->
+        <div id="vote-area"></div>
+
+        <!-- 댓글 영역 -->
+        <div class="comments-section">
+          <div class="comments-header">
+            <div class="comments-title">
+              💬 댓글
+              <span class="comment-count-badge" id="comment-count">0</span>
+            </div>
+            <div class="comment-sort">
+              <button class="sort-btn active" id="sort-oldest">등록순</button>
+              <button class="sort-btn" id="sort-newest">최신순</button>
+            </div>
+          </div>
+
+          <!-- 댓글 작성 -->
+          <div class="comment-write-area">
+            <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem">
+              👤 익명으로 댓글 달기
+            </div>
+            <div class="comment-input-row">
+              <textarea
+                id="comment-input"
+                class="form-control"
+                rows="2"
+                placeholder="댓글을 입력하세요... (Ctrl+Enter로 등록)"
+                maxlength="500"
+                style="resize:none"
+              ></textarea>
+              <button class="btn btn-primary" id="comment-submit" style="align-self:flex-end;white-space:nowrap">등록</button>
+            </div>
+          </div>
+
+          <!-- 댓글 목록 -->
+          <div class="comment-list" id="comment-list"></div>
+        </div>
+
+        <!-- 하단 광고 -->
+        <div class="ad-slot ad-detail-bottom">
+          <div class="ad-slot-inner">
+            <span class="ad-label">Advertisement</span>
+            <span class="ad-size">하단 배너 광고 — 728×90</span>
+            <!-- Google AdSense 코드 삽입 위치 -->
+          </div>
+        </div>
+
+        <!-- 다른 투표 보기 -->
+        <div style="text-align:center;padding:0.5rem 0">
+          <a href="index.html" class="btn btn-secondary btn-lg">
+            📋 다른 투표 보러 가기
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="post-sidebar">
+        <div class="post-sidebar-sticky">
+
+          <!-- Sidebar Ad -->
+          <div class="ad-slot ad-sidebar">
+            <div class="ad-slot-inner">
+              <span class="ad-label">Advertisement</span>
+              <span class="ad-size">사이드바 광고 — 300×250</span>
+              <!-- Google AdSense 코드 삽입 위치 -->
+            </div>
+          </div>
+
+          <!-- 안내 박스 -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem">
+            <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.5rem">🗳️ 투표 안내</div>
+            <ul style="font-size:0.8rem;color:var(--text-secondary);line-height:1.9;padding-left:1rem">
+              <li>익명으로 투표가 진행됩니다</li>
+              <li>한 번 선택하면 변경 불가</li>
+              <li>투표 후 실시간 결과 확인</li>
+              <li>댓글로 의견을 남겨보세요</li>
+            </ul>
+          </div>
+
+          <!-- 새 투표 만들기 -->
+          <a href="index.html" class="btn btn-primary btn-full" style="margin-bottom:1rem">
+            + 새 투표 만들기
+          </a>
+
+          <!-- Second Sidebar Ad -->
+          <div class="ad-slot" style="height:200px">
+            <div class="ad-slot-inner">
+              <span class="ad-label">Advertisement</span>
+              <span class="ad-size">300×200</span>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-text">© 2024 투표박스 — 익명 투표 커뮤니티</div>
+        <div class="footer-text">로그인 없이 누구나 자유롭게 투표하세요</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/post.js"></script>
+  <script>
+    // 브레드크럼 제목 업데이트
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      const postId = params.get('id');
+      if (postId) {
+        const post = Storage.getPost(postId);
+        if (post) {
+          document.getElementById('breadcrumb-title').textContent = post.title;
+          document.title = post.title + ' - 투표박스';
+        }
+      }
+    });
+
+    // Toast for post page
+    window.Toast = {
+      show(msg, type = 'info', duration = 3000) {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icons = { success: '✓', error: '✕', info: 'ℹ' };
+        toast.innerHTML = `<span>${icons[type] || 'ℹ'}</span><span>${escapeHtml(msg)}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(100%)';
+          toast.style.transition = 'all 0.3s ease';
+          setTimeout(() => toast.remove(), 300);
+        }, duration);
+      }
+    };
+  </script>
+</body>
+</html>
