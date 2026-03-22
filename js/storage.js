@@ -178,15 +178,23 @@ const Storage = {
 
   deleteComment(id) {
     const comment = this.getComment(id);
-    const comments = this._getAllComments().map(c =>
-      c.id === id ? { ...c, deleted: true } : c
-    );
+    if (!comment) return;
+
+    // 댓글 + 해당 댓글의 대댓글 모두 soft delete, 실제로 삭제되는 수 집계
+    let deleteCount = 0;
+    const comments = this._getAllComments().map(c => {
+      if ((c.id === id || c.parentId === id) && !c.deleted) {
+        deleteCount++;
+        return { ...c, deleted: true };
+      }
+      return c;
+    });
     setItem(KEYS.COMMENTS, comments);
 
-    // 게시글 댓글 수 감소
-    if (comment) {
+    // 실제 삭제된 수만큼 commentCount 차감
+    if (deleteCount > 0) {
       const posts = this._getAllPosts().map(p =>
-        p.id === comment.postId ? { ...p, commentCount: Math.max(0, (p.commentCount || 1) - 1) } : p
+        p.id === comment.postId ? { ...p, commentCount: Math.max(0, (p.commentCount || 0) - deleteCount) } : p
       );
       setItem(KEYS.POSTS, posts);
     }

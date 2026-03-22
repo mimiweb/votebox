@@ -51,11 +51,14 @@ const PostPage = {
     document.getElementById('post-body').textContent = post.content || '';
     if (!post.content) document.getElementById('post-body').style.display = 'none';
 
+    // 저장된 commentCount 대신 실제 댓글 배열에서 계산
+    const actualCommentCount = Storage.getComments(this.postId).filter(c => !c.deleted).length;
+
     document.getElementById('post-meta').innerHTML = `
       <span>👤 익명</span>
       <span>🕐 ${formatDate(post.createdAt)}</span>
       <span>🗳️ ${post.totalVotes.toLocaleString()}표</span>
-      <span>💬 ${post.commentCount}개 댓글</span>`;
+      <span>💬 ${actualCommentCount}개 댓글</span>`;
 
     // 좋아요 버튼
     const likeBtn = document.getElementById('btn-post-like');
