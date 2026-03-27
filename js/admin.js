@@ -75,6 +75,19 @@ const AdminPage = {
     document.getElementById('search-input').addEventListener('input', (e) => {
       this.renderCurrentTab(e.target.value.trim().toLowerCase());
     });
+    document.getElementById('btn-purge').addEventListener('click', () => this.purgeDeleted());
+  },
+
+  async purgeDeleted() {
+    if (!confirm('삭제된 게시글과 댓글을 Firestore에서 완전히 제거할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
+    try {
+      const { posts, comments } = await Storage.adminPurgeDeleted();
+      await this.renderStats();
+      await this.renderCurrentTab('');
+      Toast.show(`완전 삭제 완료 — 게시글 ${posts}개, 댓글 ${comments}개`, 'success');
+    } catch {
+      Toast.show('오류가 발생했습니다.', 'error');
+    }
   },
 
   async showTab(tab) {

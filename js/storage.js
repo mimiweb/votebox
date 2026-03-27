@@ -262,6 +262,20 @@ const Storage = {
       .sort((a, b) => b.createdAt - a.createdAt);
   },
 
+  async adminPurgeDeleted() {
+    const [postsSnap, commentsSnap] = await Promise.all([
+      db.collection('posts').where('deleted', '==', true).get(),
+      db.collection('comments').where('deleted', '==', true).get(),
+    ]);
+
+    const batch = db.batch();
+    postsSnap.docs.forEach(doc => batch.delete(doc.ref));
+    commentsSnap.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+
+    return { posts: postsSnap.size, comments: commentsSnap.size };
+  },
+
   /* ── Sample Data ── */
 
   async seedSampleData() {
