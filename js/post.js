@@ -102,6 +102,16 @@ const PostPage = {
         <span>좋아요</span>`;
     }
 
+    // 내 게시글이면 수정/삭제 버튼 표시
+    const ownerActions = document.getElementById('owner-actions');
+    if (ownerActions) {
+      if (Storage.isMyPost(this.postId)) {
+        ownerActions.style.display = 'flex';
+      } else {
+        ownerActions.style.display = 'none';
+      }
+    }
+
     const breadcrumb = document.getElementById('breadcrumb-title');
     if (breadcrumb) breadcrumb.textContent = post.title;
   },
@@ -274,6 +284,31 @@ const PostPage = {
   },
 
   bindEvents() {
+    // 내 글 삭제
+    const deleteBtn = document.getElementById('btn-delete-post');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', async () => {
+        if (!confirm('이 투표를 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.')) return;
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = '삭제 중...';
+        try {
+          await Storage.deletePost(this.postId);
+          Toast.show('게시글이 삭제되었습니다.', 'success');
+          setTimeout(() => { location.href = 'index.html'; }, 1000);
+        } catch {
+          Toast.show('삭제 중 오류가 발생했습니다.', 'error');
+          deleteBtn.disabled = false;
+          deleteBtn.textContent = '🗑️ 삭제';
+        }
+      });
+    }
+
+    // 내 글 수정
+    const editBtn = document.getElementById('btn-edit-post');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => this.openEditModal());
+    }
+
     const likeBtn = document.getElementById('btn-post-like');
     if (likeBtn) {
       likeBtn.addEventListener('click', async () => {
@@ -377,6 +412,69 @@ const PostPage = {
         }
       });
     }
+  },
+
+  openEditModal() {
+    const post = this.post;
+    // 기존 모달 제거
+    const existing = document.getElementById('edit-modal-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'edit-modal-overlay';
+    overlay.className = 'modal-overlay open';
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:500px">
+        <div class="modal-header">
+          <h2 class="modal-title">투표 수정</h2>
+          <button class="modal-close" id="edit-modal-close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning" style="margin-bottom:1rem">
+            <span>⚠️</span><span>선택지는 투표 무결성을 위해 수정할 수 없습니다.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">제목 <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="edit-title" class="form-control" value="${escapeHtml(post.title)}" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">본문</label>
+            <textarea id="edit-content" class="form-control" rows="3" maxlength="500">${escapeHtml(post.content || '')}</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="edit-modal-cancel">취소</button>
+          <button class="btn btn-primary" id="edit-modal-save">저장</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    document.getElementById('edit-modal-close').addEventListener('click', close);
+    document.getElementById('edit-modal-cancel').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    document.getElementById('edit-modal-save').addEventListener('click', async () => {
+      const title = document.getElementById('edit-title').value.trim();
+      if (!title) { Toast.show('제목을 입력해주세요.', 'error'); return; }
+      const content = document.getElementById('edit-content').value.trim();
+      const saveBtn = document.getElementById('edit-modal-save');
+      saveBtn.disabled = true;
+      saveBtn.textContent = '저장 중...';
+      try {
+        await Storage.updatePost(this.postId, { title, content });
+        this.post = await Storage.getPost(this.postId);
+        this.renderPost();
+        close();
+        Toast.show('수정되었습니다.', 'success');
+      } catch {
+        Toast.show('오류가 발생했습니다.', 'error');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '저장';
+      }
+    });
   },
 
   async submitComment() {

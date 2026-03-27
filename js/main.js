@@ -87,7 +87,10 @@ const App = {
 
     wrapper.innerHTML = `
       <div class="card-body">
-        <div class="post-card-title">${escapeHtml(post.title)}</div>
+        <div class="post-card-title">
+          ${escapeHtml(post.title)}
+          ${Storage.isMyPost(post.id) ? '<span style="font-size:0.7rem;font-weight:600;background:#eef2ff;color:#6366f1;border-radius:4px;padding:0.1rem 0.4rem;margin-left:0.4rem;vertical-align:middle">내 글</span>' : ''}
+        </div>
         ${post.content ? `<div class="post-card-content">${escapeHtml(post.content)}</div>` : ''}
         <div class="post-card-options">${optionBadges}</div>
         <div class="post-card-meta">

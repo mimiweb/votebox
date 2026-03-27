@@ -23,6 +23,17 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+// 디바이스 고정 익명 ID (localStorage에 영구 저장)
+function getDeviceAnonId() {
+  let id = localStorage.getItem('vb_device_anon');
+  if (!id) {
+    const num = Math.floor(1000 + Math.random() * 9000);
+    id = `익명${num}`;
+    localStorage.setItem('vb_device_anon', id);
+  }
+  return id;
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
@@ -69,7 +80,35 @@ const Storage = {
       deleted: false,
     };
     const ref = await db.collection('posts').add(post);
+    // 내 게시글 목록에 추가 (디바이스 기준)
+    this._addMyPost(ref.id);
     return { id: ref.id, ...post };
+  },
+
+  async updatePost(id, { title, content }) {
+    await db.collection('posts').doc(id).update({
+      title: title.trim(),
+      content: (content || '').trim(),
+    });
+  },
+
+  /* ── 내 게시글 (디바이스 기준) ── */
+
+  _addMyPost(postId) {
+    const ids = this.getMyPostIds();
+    if (!ids.includes(postId)) {
+      ids.push(postId);
+      localStorage.setItem('vb_my_posts', JSON.stringify(ids));
+    }
+  },
+
+  getMyPostIds() {
+    try { return JSON.parse(localStorage.getItem('vb_my_posts') || '[]'); }
+    catch { return []; }
+  },
+
+  isMyPost(postId) {
+    return this.getMyPostIds().includes(postId);
   },
 
   async deletePost(id) {
@@ -132,12 +171,11 @@ const Storage = {
   },
 
   async createComment({ postId, parentId = null, content }) {
-    const anonNum = Math.floor(1000 + Math.random() * 9000);
     const comment = {
       postId,
       parentId,
       content: content.trim(),
-      author: `익명${anonNum}`,
+      author: getDeviceAnonId(), // 디바이스 고정 익명 ID
       likes: 0,
       createdAt: Date.now(),
       deleted: false,

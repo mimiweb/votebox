@@ -76,6 +76,12 @@
               목록으로
             </a>
           </div>
+          <!-- 내 게시글 전용 수정/삭제 버튼 (JS에서 표시 여부 결정) -->
+          <div id="owner-actions" style="display:none;gap:0.5rem;padding-top:0.75rem;margin-top:0.25rem;border-top:1px solid var(--border)">
+            <span style="font-size:0.78rem;color:var(--text-muted);align-self:center">✏️ 내가 쓴 글</span>
+            <button class="btn btn-secondary btn-sm" id="btn-edit-post">수정</button>
+            <button class="btn btn-danger btn-sm" id="btn-delete-post">🗑️ 삭제</button>
+          </div>
         </div>
 
         <!-- 투표 영역 -->
