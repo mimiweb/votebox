@@ -79,12 +79,6 @@ const App = {
     wrapper.href = `post.html?id=${post.id}`;
     wrapper.className = 'card post-card mb-2';
 
-    const topOptions = post.options.slice(0, 3);
-    const moreCount = post.options.length - 3;
-    const optionBadges = topOptions.map(o =>
-      `<span class="option-badge">${escapeHtml(o.text)}</span>`
-    ).join('') + (moreCount > 0 ? `<span class="option-badge">+${moreCount}개 더</span>` : '');
-
     wrapper.innerHTML = `
       <div class="card-body">
         <div class="post-card-title">
@@ -92,7 +86,6 @@ const App = {
           ${Storage.isMyPost(post.id) ? '<span style="font-size:0.7rem;font-weight:600;background:#eef2ff;color:#6366f1;border-radius:4px;padding:0.1rem 0.4rem;margin-left:0.4rem;vertical-align:middle">내 글</span>' : ''}
         </div>
         ${post.content ? `<div class="post-card-content">${escapeHtml(post.content)}</div>` : ''}
-        <div class="post-card-options">${optionBadges}</div>
         <div class="post-card-meta">
           <span class="meta-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
